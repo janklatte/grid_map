@@ -20,13 +20,6 @@ endif()
 
 grid_map_package()
 
-## Specify additional locations of header files
-include_directories(
-  include
-  SYSTEM
-    ${EIGEN3_INCLUDE_DIR}
-)
-
 ###########
 ## Build ##
 ###########
@@ -49,29 +42,40 @@ add_library(${PROJECT_NAME}
   src/iterators/SlidingWindowIterator.cpp
 )
 
+## Specify additional locations of header files
+target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+        $<INSTALL_INTERFACE:include/>
+        ${EIGEN3_INCLUDE_DIR}
+)
+
+ament_export_targets( ${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_include_directories(include ${EIGEN3_INCLUDE_DIR})
+
 #############
 ## Install ##
 #############
 
-# Mark executables and/or libraries for installation
-install(
-  TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
-)
-
 # Mark cpp header files for installation
 install(
-  DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.hpp"
+        DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION include/${PROJECT_NAME}/
+)
+
+# Mark executables and/or libraries for installation
+install(
+    TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
+    INCLUDES DESTINATION include
 )
 
 # Mark other files for installation
 install(
-  DIRECTORY doc
-  DESTINATION share/${PROJECT_NAME}
+    DIRECTORY doc
+    DESTINATION share/${PROJECT_NAME}
 )
 
 #############
@@ -129,10 +133,6 @@ if(TARGET ${PROJECT_NAME}-test)
   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 endif()
 
-ament_export_include_directories(include ${EIGEN3_INCLUDE_DIR})
-ament_export_libraries(
-  ${PROJECT_NAME}
-)
 ament_package(CONFIG_EXTRAS
   cmake/${PROJECT_NAME}-extras.cmake
 )
